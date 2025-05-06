@@ -248,18 +248,19 @@ func (c *ApiConnectivityCheck) popPeerIPs(peersIPs *[]corev1.PodIP, count int) [
 	}
 
 	// TODO: maybe we should pick nodes randomly rather than relying on the order returned from api-server
-	selectedIPs := make([]corev1.PodIP, count)
-	for i := 0; i < count; i++ {
+	validIPs := make([]corev1.PodIP, 0, nrOfPeers)
+	for i := range nrOfPeers {
 		ip := (*peersIPs)[i]
 		if ip.IP == "" {
 			// This should not happen, but keeping it for good measure.
 			c.config.Log.Info("ignoring peers without IP address")
 			continue
 		}
-		selectedIPs[i] = ip
+		validIPs = append(validIPs, ip)
 	}
 
-	*peersIPs = (*peersIPs)[count:] //remove popped nodes from the list
+	selectedIPs := (validIPs)[:count]
+	*peersIPs = (validIPs)[count:] // remove popped nodes from the list
 
 	return selectedIPs
 }
